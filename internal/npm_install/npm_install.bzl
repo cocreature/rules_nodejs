@@ -345,7 +345,7 @@ def _copy_file(repository_ctx, f):
 
     # copy the file; don't use the repository_ctx.template trick with empty substitution as this
     # does not copy over binary files properly
-    cp_args = ["cp", "-f", repository_ctx.path(f), to] if not is_windows_os(repository_ctx) else ["robocopy", "\\".join(str(repository_ctx.path(f)).split("/")[:-1]), "\\".join(to_segments[:-1]), to_segments[-1]]
+    cp_args = ["cp", "-f", repository_ctx.path(f), to] if not is_windows_os(repository_ctx) else ["xcopy", "/Y", str(repository_ctx.path(f)).replace("/", "\\"), "\\".join(to_segments)]
     result = repository_ctx.execute(
         cp_args,
         quiet = repository_ctx.attr.quiet,
