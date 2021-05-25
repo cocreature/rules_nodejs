@@ -335,7 +335,7 @@ def _copy_file(repository_ctx, f):
     to_segments = to.split("/")
     if len(to_segments) > 1:
         dirname = "/".join(to_segments[:-1])
-        args = ["mkdir", "-p", dirname] if not is_windows_os(repository_ctx) else ["cmd", "/c", "if not exist {dir} mkdir {dir}".format(dir = dirname.replace("/", "\\"))]
+        args = ["mkdir", "-p", dirname] if not is_windows_os(repository_ctx) else ["cmd", "/c", "if not exist {dir} (mkdir {dir})".format(dir = dirname.replace("/", "\\"))]
         result = repository_ctx.execute(
             args,
             quiet = repository_ctx.attr.quiet,
@@ -345,13 +345,13 @@ def _copy_file(repository_ctx, f):
 
     # copy the file; don't use the repository_ctx.template trick with empty substitution as this
     # does not copy over binary files properly
-    cp_args = ["cp", "-f", repository_ctx.path(f), to] if not is_windows_os(repository_ctx) else ["cmd", "/c", "copy /y {} {}".format(str(repository_ctx.path(f)).replace("/", "\\"), "\\".join(to_segments))]
+    cp_args = ["cp", "-f", repository_ctx.path(f), to] if not is_windows_os(repository_ctx) else ["xcopy", "/Y", str(repository_ctx.path(f)).replace("/", "\\"), "\\".join(to_segments)]
     result = repository_ctx.execute(
         cp_args,
         quiet = repository_ctx.attr.quiet,
     )
     if result.return_code:
-        fail("cp -f {} {} failed: \nSTDOUT:\n{}\nSTDERR:\n{}, {}".format(repository_ctx.path(f), to, result.stdout, result.stderr, cp_args))
+        fail("cp -f {} {} failed: \nSTDOUT:\n{}\nSTDERR:\n{}".format(repository_ctx.path(f), to, result.stdout, result.stderr))
 
 def _symlink_file(repository_ctx, f):
     repository_ctx.symlink(f, _workspace_root_path(repository_ctx, f))
